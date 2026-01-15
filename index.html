@@ -23,7 +23,8 @@ async function sendMsg(){
   });
 
   let data = await res.json();
-  document.getElementById("reply").innerText = data.reply;
+  document.getElementById("reply").innerText = data.bot_reply;
+
 }
 </script>
 
