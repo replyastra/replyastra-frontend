@@ -6,6 +6,26 @@
 <body>
   <h1>🚀 ReplyAstra</h1>
   <p>DM Automation SaaS</p>
-  <p>Your API is live!</p>
+
+  <input id="msg" placeholder="Type message..." />
+  <button onclick="sendMsg()">Send</button>
+
+  <p id="reply"></p>
+
+<script>
+async function sendMsg(){
+  let msg = document.getElementById("msg").value;
+
+  let res = await fetch("https://api.replyastra.online/api/dm", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: msg })
+  });
+
+  let data = await res.json();
+  document.getElementById("reply").innerText = data.reply;
+}
+</script>
+
 </body>
 </html>
