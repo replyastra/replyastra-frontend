@@ -1,60 +1,74 @@
 import { useState } from "react";
+import { API_URL } from "./config";
 
 export default function App() {
   const [page, setPage] = useState("home");
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
+    <div style={bg}>
       <Navbar setPage={setPage} />
+
       {page === "home" && <Home setPage={setPage} />}
       {page === "login" && <Login setPage={setPage} />}
+      {page === "signup" && <Signup setPage={setPage} />}
       {page === "dashboard" && <Dashboard />}
     </div>
   );
 }
 
+/* ---------------- NAVBAR ---------------- */
+
 function Navbar({ setPage }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "20px", background: "#fff", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-      <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "#667eea" }}>ReplyAstra</h1>
+    <div style={nav}>
+      <h1 style={logo}>ReplyAstra</h1>
       <div>
-        <button onClick={() => setPage("home")} style={{ marginRight: "10px", padding: "10px 20px", background: "transparent", border: "none", cursor: "pointer" }}>Home</button>
-        <button onClick={() => setPage("login")} style={{ padding: "10px 20px", background: "#667eea", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}>Login</button>
+        <button style={navBtn} onClick={() => setPage("home")}>
+          Home
+        </button>
+
+        <button style={navBtn} onClick={() => setPage("login")}>
+          Login
+        </button>
+
+        <button style={signupBtn} onClick={() => setPage("signup")}>
+          Sign Up
+        </button>
       </div>
     </div>
   );
 }
 
+/* ---------------- HOME ---------------- */
+
 function Home({ setPage }) {
   return (
-    <div style={{ textAlign: "center", padding: "100px 20px", color: "#fff" }}>
-      <h2 style={{ fontSize: "48px", fontWeight: "bold", marginBottom: "20px" }}>Automate Instagram DMs</h2>
-      <p style={{ fontSize: "18px", marginBottom: "40px" }}>Turn followers into customers 24/7</p>
-      <button onClick={() => setPage("login")} style={{ padding: "15px 30px", fontSize: "18px", background: "#fff", color: "#667eea", border: "none", borderRadius: "10px", cursor: "pointer", fontWeight: "bold" }}>Get Started</button>
+    <div style={home}>
+      <h2 style={heroTitle}>Automate Instagram DMs 🚀</h2>
+      <p style={heroSub}>
+        Convert followers into customers automatically
+      </p>
+
+      <button style={cta} onClick={() => setPage("signup")}>
+        Get Started Free
+      </button>
     </div>
   );
 }
 
-import { API_URL } from "./config";
-
+/* ---------------- LOGIN ---------------- */
 
 function Login({ setPage }) {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
 
-  const handleLogin = async () => {
+  async function handleLogin() {
     try {
       const res = await fetch(`${API_URL}/api/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email,
-          password
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
       });
 
       const data = await res.json();
@@ -65,49 +79,100 @@ function Login({ setPage }) {
       } else {
         setMsg(data.msg || "Login failed");
       }
-
-    } catch (err) {
+    } catch {
       setMsg("Server error");
     }
-  };
+  }
 
   return (
-    <div className="max-w-md mx-auto mt-20 bg-white p-6 rounded shadow">
-
-      <h3 className="text-xl font-bold mb-4">
-        Login to ReplyAstra
-      </h3>
+    <div style={card}>
+      <h3 style={cardTitle}>Welcome Back 👋</h3>
 
       <input
         placeholder="Email"
-        className="border p-2 w-full mb-3"
+        style={input}
         onChange={(e) => setEmail(e.target.value)}
       />
 
       <input
         placeholder="Password"
         type="password"
-        className="border p-2 w-full mb-3"
+        style={input}
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      <button
-        onClick={handleLogin}
-        className="w-full bg-blue-600 text-white py-2 rounded"
-      >
+      <button style={mainBtn} onClick={handleLogin}>
         Login
       </button>
 
-      {msg && (
-        <p className="text-red-500 mt-3 text-sm">
-          {msg}
-        </p>
-      )}
+      <p style={link} onClick={() => setPage("signup")}>
+        Don't have account? Sign up
+      </p>
 
+      {msg && <p style={error}>{msg}</p>}
     </div>
   );
 }
 
+/* ---------------- SIGNUP ---------------- */
+
+function Signup({ setPage }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [msg, setMsg] = useState("");
+
+  async function handleSignup() {
+    try {
+      const res = await fetch(`${API_URL}/api/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (data.msg) {
+        setMsg(data.msg);
+        if (data.msg.includes("success")) {
+          setTimeout(() => setPage("login"), 1500);
+        }
+      }
+    } catch {
+      setMsg("Server error");
+    }
+  }
+
+  return (
+    <div style={card}>
+      <h3 style={cardTitle}>Create Account 🚀</h3>
+
+      <input
+        placeholder="Email"
+        style={input}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+
+      <input
+        placeholder="Password"
+        type="password"
+        style={input}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+
+      <button style={mainBtn} onClick={handleSignup}>
+        Sign Up
+      </button>
+
+      <p style={link} onClick={() => setPage("login")}>
+        Already have account? Login
+      </p>
+
+      {msg && <p style={success}>{msg}</p>}
+    </div>
+  );
+}
+
+/* ---------------- DASHBOARD ---------------- */
 
 function Dashboard() {
   const [trigger, setTrigger] = useState("");
@@ -116,45 +181,154 @@ function Dashboard() {
 
   function saveRule() {
     if (!trigger || !reply) return alert("Fill all fields");
+
     setRules([...rules, { trigger, reply }]);
     setTrigger("");
     setReply("");
   }
 
   return (
-    <div style={{ padding: "40px", color: "#fff" }}>
-      <h2 style={{ fontSize: "32px", fontWeight: "bold", marginBottom: "30px" }}>Dashboard</h2>
-      
-      <div style={{ background: "#fff", padding: "30px", borderRadius: "10px", maxWidth: "500px", color: "#333" }}>
-        <h3 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "20px" }}>Create Automation</h3>
-        
-        <input 
+    <div style={dash}>
+      <h2 style={dashTitle}>Dashboard</h2>
+
+      <div style={dashCard}>
+        <h3>Create Automation</h3>
+
+        <input
           value={trigger}
           onChange={(e) => setTrigger(e.target.value)}
-          placeholder="Trigger word " 
-          style={{ width: "100%", padding: "12px", marginBottom: "15px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "16px" }}
+          placeholder="Trigger word"
+          style={input}
         />
-        
-        <textarea 
+
+        <textarea
           value={reply}
           onChange={(e) => setReply(e.target.value)}
-          placeholder="Auto reply message" 
-          style={{ width: "100%", padding: "12px", marginBottom: "15px", border: "1px solid #ddd", borderRadius: "5px", fontSize: "16px", minHeight: "100px" }}
+          placeholder="Auto reply"
+          style={{ ...input, height: 80 }}
         />
-        
-        <button onClick={saveRule} style={{ padding: "12px 24px", background: "#10b981", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer", fontSize: "16px" }}>Save Rule</button>
+
+        <button style={saveBtn} onClick={saveRule}>
+          Save Rule
+        </button>
       </div>
 
-      <div style={{ marginTop: "30px", maxWidth: "500px" }}>
-        <h3 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "15px" }}>Saved Automations</h3>
-        {rules.length === 0 && <p style={{ color: "#fff" }}>No rules yet</p>}
+      <div style={{ marginTop: 30 }}>
+        <h3>Saved Rules</h3>
+
         {rules.map((r, i) => (
-          <div key={i} style={{ background: "#fff", padding: "15px", marginBottom: "10px", borderRadius: "5px", color: "#333" }}>
-            <p><strong>Trigger:</strong> {r.trigger}</p>
-            <p><strong>Reply:</strong> {r.reply}</p>
+          <div key={i} style={rule}>
+            <p><b>Trigger:</b> {r.trigger}</p>
+            <p><b>Reply:</b> {r.reply}</p>
           </div>
         ))}
       </div>
     </div>
   );
 }
+
+/* ---------------- STYLES ---------------- */
+
+const bg = {
+  minHeight: "100vh",
+  background: "linear-gradient(135deg,#667eea,#764ba2)"
+};
+
+const nav = {
+  display: "flex",
+  justifyContent: "space-between",
+  padding: 20,
+  background: "#fff"
+};
+
+const logo = { fontSize: 24, fontWeight: "bold", color: "#667eea" };
+
+const navBtn = { marginRight: 10, background: "none", border: "none", cursor: "pointer" };
+
+const signupBtn = {
+  background: "#667eea",
+  color: "#fff",
+  border: "none",
+  padding: "8px 16px",
+  borderRadius: 5,
+  cursor: "pointer"
+};
+
+const home = { textAlign: "center", padding: 120, color: "#fff" };
+const heroTitle = { fontSize: 48, fontWeight: "bold" };
+const heroSub = { marginTop: 10 };
+
+const cta = {
+  marginTop: 40,
+  padding: "14px 32px",
+  border: "none",
+  borderRadius: 8,
+  fontSize: 18,
+  cursor: "pointer"
+};
+
+const card = {
+  maxWidth: 400,
+  margin: "80px auto",
+  background: "#fff",
+  padding: 30,
+  borderRadius: 10
+};
+
+const cardTitle = { fontSize: 22, marginBottom: 20 };
+
+const input = {
+  width: "100%",
+  padding: 12,
+  marginBottom: 15,
+  borderRadius: 5,
+  border: "1px solid #ddd"
+};
+
+const mainBtn = {
+  width: "100%",
+  padding: 12,
+  background: "#667eea",
+  color: "#fff",
+  border: "none",
+  borderRadius: 5,
+  cursor: "pointer"
+};
+
+const link = {
+  marginTop: 15,
+  color: "#667eea",
+  cursor: "pointer",
+  textAlign: "center"
+};
+
+const error = { color: "red", marginTop: 10 };
+const success = { color: "green", marginTop: 10 };
+
+const dash = { padding: 40, color: "#fff" };
+const dashTitle = { fontSize: 32 };
+
+const dashCard = {
+  background: "#fff",
+  padding: 25,
+  borderRadius: 10,
+  color: "#333",
+  maxWidth: 500
+};
+
+const saveBtn = {
+  padding: "10px 20px",
+  background: "#10b981",
+  color: "#fff",
+  border: "none",
+  borderRadius: 5,
+  cursor: "pointer"
+};
+
+const rule = {
+  background: "#fff",
+  padding: 15,
+  borderRadius: 5,
+  marginTop: 10,
+  color: "#333"
+};
