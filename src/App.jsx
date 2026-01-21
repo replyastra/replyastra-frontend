@@ -196,43 +196,52 @@ function Signup({ setPage }) {
 
 /* ---------------- DASHBOARD ---------------- */
 
-function Dashboard({ setPage }) {
-  const [user, setUser] = useState("");
+function Dashboard() {
   const [trigger, setTrigger] = useState("");
   const [reply, setReply] = useState("");
   const [rules, setRules] = useState([]);
 
+  const token = localStorage.getItem("token");
+
+  // Fetch rules on load
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("Login first");
-      setPage("login");
-      return;
-    }
-
-    fetch(`${API_URL}/api/dashboard`, {
-      headers: {
-        Authorization: "Bearer " + token
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        setUser(data.user);
-      });
+    fetchRules();
   }, []);
 
-  function saveRule() {
+  async function fetchRules() {
+    const res = await fetch(`${API_URL}/api/rules`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+    setRules(data);
+  }
+
+  async function saveRule() {
     if (!trigger || !reply) return alert("Fill all fields");
 
-    setRules([...rules, { trigger, reply }]);
+    const res = await fetch(`${API_URL}/api/rules`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ trigger, reply })
+    });
+
+    const data = await res.json();
+
+    alert(data.msg);
     setTrigger("");
     setReply("");
+    fetchRules();
   }
 
   return (
     <div style={dash}>
-      <h2 style={dashTitle}>Welcome {user}</h2>
+      <h2 style={dashTitle}>Dashboard</h2>
 
       <div style={dashCard}>
         <h3>Create Automation</h3>
@@ -269,6 +278,7 @@ function Dashboard({ setPage }) {
     </div>
   );
 }
+
 
 /* ---------------- STYLES ---------------- */
 
