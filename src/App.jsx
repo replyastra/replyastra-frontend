@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { API_URL } from "./config";
 
 export default function App() {
   const [page, setPage] = useState("home");
+
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      setPage("dashboard");
+    }
+  }, []);
 
   return (
     <div style={bg}>
@@ -11,7 +17,7 @@ export default function App() {
       {page === "home" && <Home setPage={setPage} />}
       {page === "login" && <Login setPage={setPage} />}
       {page === "signup" && <Signup setPage={setPage} />}
-      {page === "dashboard" && <Dashboard />}
+      {page === "dashboard" && <Dashboard setPage={setPage} />}
     </div>
   );
 }
@@ -22,18 +28,35 @@ function Navbar({ setPage }) {
   return (
     <div style={nav}>
       <h1 style={logo}>ReplyAstra</h1>
+
       <div>
         <button style={navBtn} onClick={() => setPage("home")}>
           Home
         </button>
 
-        <button style={navBtn} onClick={() => setPage("login")}>
-          Login
-        </button>
+        {!localStorage.getItem("token") && (
+          <>
+            <button style={navBtn} onClick={() => setPage("login")}>
+              Login
+            </button>
 
-        <button style={signupBtn} onClick={() => setPage("signup")}>
-          Sign Up
-        </button>
+            <button style={signupBtn} onClick={() => setPage("signup")}>
+              Sign Up
+            </button>
+          </>
+        )}
+
+        {localStorage.getItem("token") && (
+          <button
+            style={signupBtn}
+            onClick={() => {
+              localStorage.removeItem("token");
+              setPage("login");
+            }}
+          >
+            Logout
+          </button>
+        )}
       </div>
     </div>
   );
@@ -131,11 +154,10 @@ function Signup({ setPage }) {
 
       const data = await res.json();
 
-      if (data.msg) {
-        setMsg(data.msg);
-        if (data.msg.includes("success")) {
-          setTimeout(() => setPage("login"), 1500);
-        }
+      setMsg(data.msg);
+
+      if (data.msg?.includes("success")) {
+        setTimeout(() => setPage("login"), 1500);
       }
     } catch {
       setMsg("Server error");
@@ -174,10 +196,31 @@ function Signup({ setPage }) {
 
 /* ---------------- DASHBOARD ---------------- */
 
-function Dashboard() {
+function Dashboard({ setPage }) {
+  const [user, setUser] = useState("");
   const [trigger, setTrigger] = useState("");
   const [reply, setReply] = useState("");
   const [rules, setRules] = useState([]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Login first");
+      setPage("login");
+      return;
+    }
+
+    fetch(`${API_URL}/api/dashboard`, {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setUser(data.user);
+      });
+  }, []);
 
   function saveRule() {
     if (!trigger || !reply) return alert("Fill all fields");
@@ -189,7 +232,7 @@ function Dashboard() {
 
   return (
     <div style={dash}>
-      <h2 style={dashTitle}>Dashboard</h2>
+      <h2 style={dashTitle}>Welcome {user}</h2>
 
       <div style={dashCard}>
         <h3>Create Automation</h3>
