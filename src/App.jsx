@@ -35,15 +35,79 @@ function Home({ setPage }) {
   );
 }
 
+import { API_URL } from "./config";
+import { useState } from "react";
+
 function Login({ setPage }) {
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [msg, setMsg] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        setPage("dashboard");
+      } else {
+        setMsg(data.msg || "Login failed");
+      }
+
+    } catch (err) {
+      setMsg("Server error");
+    }
+  };
+
   return (
-    <div style={{ maxWidth: "400px", margin: "100px auto", background: "#fff", padding: "40px", borderRadius: "10px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
-      <h3 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "30px", textAlign: "center" }}>Login to ReplyAstra</h3>
-      <button onClick={() => setPage("dashboard")} style={{ width: "100%", padding: "15px", background: "#1877f2", color: "#fff", border: "none", borderRadius: "5px", fontSize: "16px", cursor: "pointer" }}>Continue with Facebook</button>
-      <p style={{ textAlign: "center", marginTop: "15px", fontSize: "14px", color: "#666" }}>(Instagram connects via Facebook)</p>
+    <div className="max-w-md mx-auto mt-20 bg-white p-6 rounded shadow">
+
+      <h3 className="text-xl font-bold mb-4">
+        Login to ReplyAstra
+      </h3>
+
+      <input
+        placeholder="Email"
+        className="border p-2 w-full mb-3"
+        onChange={(e) => setEmail(e.target.value)}
+      />
+
+      <input
+        placeholder="Password"
+        type="password"
+        className="border p-2 w-full mb-3"
+        onChange={(e) => setPassword(e.target.value)}
+      />
+
+      <button
+        onClick={handleLogin}
+        className="w-full bg-blue-600 text-white py-2 rounded"
+      >
+        Login
+      </button>
+
+      {msg && (
+        <p className="text-red-500 mt-3 text-sm">
+          {msg}
+        </p>
+      )}
+
     </div>
   );
 }
+
 
 function Dashboard() {
   const [trigger, setTrigger] = useState("");
